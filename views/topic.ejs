@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Welcome to the posts list</title>
+        <link rel="stylesheet" type="text/css" href="/main.css" />
+    </head>
+    <h1><%= topic.topicname %></h1>
+    <p><a href="/topics/<%=topic.topicID%>/join">Join Topic</a></p>
+    <p><a href="/topics/<%=topic.topicID%>/add-post">Add Post</a></p>
+    <ul>
+        <% posts.forEach(item => { %>
+            <li><a href="/posts/<%= item.postID %>"><%= item.posttitle %></a></li>
+        <% }); %>
+    </ul>
+</html>

@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Welcome to the posts list</title>
+        <link rel="stylesheet" type="text/css" href="/main.css" />
+    </head>
+    <ul>
+        <% posts.forEach(item => { %>
+            <li><a href="posts/<%= item.postID %>"><%= item.posttitle %></a></li>
+        <% }); %>
+    </ul>
+</html>

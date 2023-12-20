@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+    <title>Welcome to the posts list</title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+    <form method="POST" action="/new-post-submit">
+        <div>
+            <label for="postTitle">Post Title:</label>
+            <input type="text" id="postTitle" name="postTitle" value="<%= postTitle%>" required>
+        </div>
+        <div>
+            <label for="postContent">Content:</label>
+            <textarea id="postContent" name="postContent" required><%=postContent%></textarea>
+        </div>
+        <input type="hidden" name="topicID" value="<%=topicID%>">
+        <button type="submit">Create Post</button>
+    </form>
+</body>
+</html>

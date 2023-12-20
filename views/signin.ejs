@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+    <title>Welcome to the sign in page</title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+    <h1>Login</h1>
+<% if (failed) { %>
+    <p>Login incorrect. Please try again.</p>
+<% } %>
+<form method="POST" action="login">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="<%= username%>" required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="text" id="password" name="password" value="<%= password%>" required>
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" value="<%= email%>" required>
+    </div>
+    <button type="submit">Log in</button>
+</form>
+</html>
