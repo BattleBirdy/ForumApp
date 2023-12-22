@@ -69,6 +69,24 @@ module.exports = function (app) {
         });
     });
 
+    app.post("/new-reply-submit", function (req, res) {
+        const message = req.body;
+        const postID = req.body.postID;
+        const userID = req.cookies.userID;
+        if (userID == null) {
+            res.render("message.ejs", {message:"You are not signed in", redirect:"/posts/" + postID});
+        }
+        let sqlquery = "INSERT INTO replies (userID, postID, replycontent, dateposted) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        db.query(sqlquery, [userID, postID, message.replycontent], function (err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/');
+                return;
+            }
+            res.render("message.ejs", {message:"Reply to post created.", redirect:"/posts/" + postID});
+        });
+    });
+
     app.get('/topics/:topicID(\\d+)/join', function (req, res) {
         const topicID = req.params.topicID;
         const userID = req.cookies.userID;
