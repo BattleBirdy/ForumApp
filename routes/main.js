@@ -1,3 +1,5 @@
+const util = require('util');
+
 module.exports = function (app) {
     // Handle our routes
 
@@ -69,6 +71,24 @@ module.exports = function (app) {
         });
     });
 
+    app.post("/new-reply-submit", function (req, res) {
+        const message = req.body;
+        const postID = req.body.postID;
+        const userID = req.cookies.userID;
+        if (userID == null) {
+            res.render("message.ejs", {message:"You are not signed in", redirect:"/posts/" + postID});
+        }
+        let sqlquery = "INSERT INTO replies (userID, postID, replycontent, dateposted) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        db.query(sqlquery, [userID, postID, message.replycontent], function (err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/');
+                return;
+            }
+            res.render("message.ejs", {message:"Reply to post created.", redirect:"/posts/" + postID});
+        });
+    });
+
     app.get('/topics/:topicID(\\d+)/join', function (req, res) {
         const topicID = req.params.topicID;
         const userID = req.cookies.userID;
@@ -132,6 +152,29 @@ module.exports = function (app) {
             }
             res.render('users.ejs', {users: result});
         });
+    });
+
+    app.get("/users/:userID(\\d+)", async function (req, res) {
+        const dbQueryPromise = util.promisify(db.query).bind(db);
+        const userID = req.params.userID;
+        let userdata = null;
+        let topicsdata = [];
+        let postsdata = [];
+        let repliesdata = [];
+
+        let userquery = "SELECT * FROM users WHERE userID = ?";
+        userdata = await dbQueryPromise(userquery, [userID]);
+
+        let topicsquery = "SELECT * FROM members LEFT JOIN topics ON members.topicID = topics.topicID WHERE userID = ?";
+        topicsdata = await dbQueryPromise(topicsquery, [userID]);
+
+        let postsquery = "SELECT * FROM posts WHERE userID = ?";
+        postsdata = await dbQueryPromise(postsquery, [userID]);
+
+        let repliesquery = "SELECT * FROM replies WHERE userID = ?";
+        repliesdata = await dbQueryPromise(repliesquery, [userID]);
+
+        res.render("user.ejs", {user: userdata[0], topics: topicsdata, posts: postsdata, replies: repliesdata});
     });
 
     app.get('/posts/:postID(\\d+)', function (req, res) {
@@ -211,6 +254,23 @@ module.exports = function (app) {
                 res.cookie("userID", result[0].userID, {maxAge: 90000000 * 12, httpOnly: true});
                 res.render('message.ejs', {message: "You successfully signed in.", redirect:"/"});
             }
+        });
+    });
+
+    app.get("/signup", function (req, res) {
+       res.render("adduser.ejs");
+    });
+
+    app.post("/create-account", function (req, res) {
+        const message = req.body;
+        let sqlquery = "INSERT INTO users (username, password, email, userdescription) VALUES (?, ?, ?, ?)";
+        db.query(sqlquery, [message.username, message.password, message.email, message.description], function (err, _) {
+            if (err) {
+                console.log(err);
+                res.redirect("/");
+                return;
+            }
+            res.render("message.ejs", {message:"Account successfully created", redirect:"/"});
         });
     });
 

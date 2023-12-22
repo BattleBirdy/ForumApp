@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+    <title>Welcome to the create account page</title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<h1>Login</h1>
+<form method="POST" action="/create-account">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="text" id="password" name="password" required>
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+    </div>
+    <div>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"></textarea>
+    </div>
+    <button type="submit">Create Account</button>
+</form>
+</html>

@@ -16,5 +16,14 @@
             <li>From user: <%= item.username%><br><%=item.replycontent%></li>
         <% }); %>
     </ul>
+    <h2>Reply to post</h2>
+    <form method="POST" action="/new-reply-submit">
+        <div>
+            <label for="replycontent">Content:</label>
+            <textarea id="replycontent" name="replycontent" required></textarea>
+        </div>
+        <input type="hidden" name="postID" value="<%=post.postID%>">
+        <button type="submit">Create Reply</button>
+    </form>
 </body>
 </html>

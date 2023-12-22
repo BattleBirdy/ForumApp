@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+    <title>Welcome to the posts list</title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<h1><%= user.username %></h1>
+<p><%= user.userdescription %></p>
+<h2>Topics</h2>
+<ul>
+    <% topics.forEach(item => { %>
+        <li><a href="/topics/<%= item.topicID %>"><%= item.topicname %></a></li>
+    <% }); %>
+</ul>
+<h2>Posts</h2>
+<ul>
+    <% posts.forEach(item => { %>
+        <li><a href="/posts/<%= item.postID %>"><%= item.posttitle %></a></li>
+    <% }); %>
+</ul>
+<h2>Replies</h2>
+<ul>
+    <% replies.forEach(item => { %>
+        <li><a href="/posts/<%= item.postID %>"><%= item.replycontent %></a></li>
+    <% }); %>
+</ul>
+</body>
+</html>
