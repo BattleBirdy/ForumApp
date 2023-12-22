@@ -245,5 +245,39 @@ module.exports = function (app) {
             res.render("posts.ejs", {posts:result});
         });
     });
+
+    app.get("/addtopic", function (req, res) {
+        const userID = req.cookies.userID;
+        if (userID == null) {
+            res.render("message.ejs", {message:"You are not logged in.", redirect:"/"});
+            return;
+        }
+        let adminquery = "SELECT isadmin FROM users WHERE userID = ?";
+        db.query(adminquery, [userID], function (err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/');
+                return;
+            }
+            if (result[0].isadmin) {
+                res.render("addtopic.ejs");
+            } else {
+                res.render("message.ejs",{message:"You are not an admin. Only admins can create topics.", redirect:"/"});
+            }
+        });
+    });
+
+    app.post("/new-topic-submit", function (req, res) {
+        const message = req.body;
+        let sqlquery = "INSERT INTO topics (topicname, topicdescription) VALUES (?,?)";
+        db.query(sqlquery, [message.topicname, message.topicdescription], function (err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect("/");
+                return;
+            }
+            res.render("message.ejs", {message:"Topic successfully created.", redirect:"/"});
+        });
+    });
 };
 

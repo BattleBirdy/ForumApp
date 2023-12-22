@@ -14,7 +14,7 @@ CREATE TABLE `users` (
 );
 
 LOCK TABLES `users` WRITE;
-INSERT INTO `users` VALUES (1,'BattleMod','password123','BattleMod@gmail.com','This user is a mod!',1),(2,'Battle','password123','Battle@gmail.com','This user is NOT a mod!',0);
+INSERT INTO `users` VALUES (1,'BattleMod','password123','BattleMod@gmail.com','This user is a mod!',1),(2,'Battle','password123','Battle@gmail.com','This user is NOT a mod!',0),(3,'Joe','password123','joe@gmail.com','Joe is in no topic and this will stay this way!',0);
 UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `topics`;
