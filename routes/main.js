@@ -1,14 +1,3 @@
-login = function (req) {
-    const username = req.cookies.username;
-    const password = req.cookies.password;
-    const email = req.cookies.email;
-    const admin = req.cookies.admin;
-    if (username == null || password == null || email == null || admin == null) {
-        return null;
-    }
-    return {username: username, password: password, email: email, admin: admin};
-}
-
 module.exports = function (app) {
     // Handle our routes
 
@@ -50,43 +39,30 @@ module.exports = function (app) {
     app.post('/new-post-submit', (req, res) => {
         const message = req.body.message;
         const topicID = req.body.topicID;
-        console.log(topicID);
-        cookies = login(req);
-        if (cookies == null) {
-            res.render('message.ejs', {message: "You are not signed in."});
+        const userID = req.cookies.userID;
+        if (userID == null) {
+            res.render('message.ejs', {message: "You are not signed in.", redirect:"/"});
             return;
         }
-        let sqlquery = "SELECT * FROM users WHERE username = ? AND password = ? AND email = ?"
-        db.query(sqlquery, [cookies.username, cookies.password, cookies.email], (err, user) => {
+        let memberquery = "SELECT * FROM members WHERE topicID = ? AND userID = ?";
+        db.query(memberquery, [topicID, userID], function (err, member) {
             if (err) {
                 console.log(err);
                 res.redirect('/');
                 return;
             }
-            if (user.length === 0) {
-                res.send("user does not exist");
+            if (member.length === 0) {
+                res.render("message.ejs", {message: "User is not a member of the topic."});
             } else {
-                let memberquery = "SELECT * FROM members WHERE topicID = ? AND userId = ?";
-                db.query(memberquery, [topicID, user[0].userID], function (err, member) {
+                let addpost = "INSERT INTO posts (userID, topicID, posttitle, postcontent, postdate)" +
+                    "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+                db.query(addpost, [userID, topicID, req.body.postTitle, req.body.postContent], function (err, _) {
                     if (err) {
                         console.log(err);
                         res.redirect('/');
                         return;
-                    }
-                    if (member.length === 0) {
-                        res.render("message.ejs", {message: "User is not a member of the topic."});
                     } else {
-                        let addpost = "INSERT INTO posts (userID, topicID, posttitle, postcontent, postdate)" +
-                            "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
-                        db.query(addpost, [user[0].userID, topicID, req.body.postTitle, req.body.postContent], function (err, _) {
-                            if (err) {
-                                console.log(err);
-                                res.redirect('/');
-                                return;
-                            } else {
-                                res.render("message.ejs", {message: "Post created."});
-                            }
-                        });
+                        res.render("message.ejs", {message: "Post created.", redirect:"/topics/" + topicID});
                     }
                 });
             }
@@ -95,35 +71,23 @@ module.exports = function (app) {
 
     app.get('/topics/:topicID(\\d+)/join', function (req, res) {
         const topicID = req.params.topicID;
-        let cookies = login(req);
-        if (cookies == null) {
-            res.render("message.ejs", {message: "You are not signed in."});
+        const userID = req.cookies.userID;
+        if (userID == null) {
+            res.render("message.ejs", {message: "You are not signed in.", redirect:"/"});
             return;
         }
-        let usersquery = "SELECT * FROM users WHERE username = ? AND password = ? AND email = ?";
-        db.query(usersquery, [cookies.username, cookies.password, cookies.email], function (err, users) {
+        let membersupdate = "INSERT INTO members (userID, topicID) VALUES (?, ?)";
+        db.query(membersupdate, [userID, topicID], function (err, result) {
+            if (err.code === "ER_DUP_ENTRY") {
+                res.render("message.ejs", {message: "You are already a member of this topic.", redirect:"/topics/" + topicID});
+                return;
+            }
             if (err) {
                 console.log(err);
                 res.redirect('/');
                 return;
             }
-            if (users.length === 0) {
-                res.render("message.ejs", {message: "You are not signed in."});
-                return;
-            }
-            let membersupdate = "INSERT INTO members (userID, topicID) VALUES (?, ?)";
-            db.query(membersupdate, [users[0].userID, topicID], function (err, result) {
-                if (err.code === "ER_DUP_ENTRY") {
-                    res.render("message.ejs", {message: "You are already a member of this topic."});
-                    return;
-                }
-                if (err) {
-                    console.log(err);
-                    res.redirect('/');
-                    return;
-                }
-                res.render("message.ejs", {message: "Successfully added to the topic."});
-            });
+            res.render("message.ejs", {message: "Successfully joined to the topic.", redirect:"/topics/" + topicID});
         });
     });
 
@@ -143,7 +107,7 @@ module.exports = function (app) {
                 return;
             }
             if (topic.length === 0) {
-                res.render("message.ejs", {message: "Topic does not exist."});
+                res.render("message.ejs", {message: "Topic does not exist.", redirect:"/"});
                 return;
             }
             let postsquery = "SELECT * FROM posts WHERE topicID = ?";
@@ -172,18 +136,54 @@ module.exports = function (app) {
 
     app.get('/posts/:postID(\\d+)', function (req, res) {
         const postID = req.params.postID;
-        let sqlquery = "SELECT * FROM posts WHERE postID = ?"; // query database to get all the post
+        let sqlquery = "SELECT * FROM posts LEFT JOIN users ON posts.userID = users.userID  WHERE postID = ? "; // query database to get all the post
         // execute sql query
-        db.query(sqlquery, [postID], (err, result) => {
+        db.query(sqlquery, [postID], (err, post) => {
             if (err) {
                 console.log(err);
                 res.redirect('/');
                 return;
             }
-            res.render('post.ejs', {post: result[0]});
+            let repliesquery = "SELECT * FROM replies LEFT JOIN users ON replies.userID = users.userID WHERE postID = ?";
+            db.query(repliesquery, [postID], function (err, replies) {
+                if (err) {
+                    console.log(err);
+                    res.redirect('/');
+                    return;
+                }
+                res.render('post.ejs', {post: post[0], replies:replies});
+            });
         });
     });
 
+    app.get("/posts/:postID(\\d+)/delete-post", function (req, res) {
+        const postID = req.params.postID;
+        const userID = req.cookies.userID;
+        if (userID == null) {
+            res.render("message.ejs", {message:"You are not logged in.", redirect:"/posts/" + postID});
+        }
+        let sqlquery = "SELECT users.userID, users.isadmin, posts.userID AS posterID, members.ismod, posts.topicID FROM " +
+            "users INNER JOIN posts ON users.userID = ? AND posts.postID = ? " +
+            "LEFT JOIN members ON users.userID = members.userID AND posts.topicID = members.topicID;";
+        db.query(sqlquery, [userID, postID], function (err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/');
+                return;
+            }
+            let deletequery = "DELETE FROM posts WHERE postID = ?";
+            if (result[0].ismod || result[0].isadmin || result[0].userID === result[0].postID) {
+                db.query(deletequery,[postID], function (err, _) {
+                    if (err) {
+                        console.log(err);
+                        res.redirect('/');
+                        return;
+                    }
+                    res.render("message.ejs", {message:"Successfully deleted the post.", redirect:"/topics/" + result[0].topicID});
+                });
+            }
+        });
+    });
 
     app.get('/signin', function (req, res) {
         res.render('signin.ejs', {username: "", password: "", email: "", failed: false});
@@ -208,20 +208,15 @@ module.exports = function (app) {
                 });
             } else {
                 // found user
-                res.cookie('username', message.username, {maxAge: 90000000 * 12, httpOnly: true});
-                res.cookie('password', message.password, {maxAge: 90000000 * 12, httpOnly: true});
-                res.cookie('email', message.email, {maxAge: 90000000 * 12, httpOnly: true});
-                res.cookie('admin', result[0].isadmin, {maxAge: 90000000 * 12, httpOnly: true});
-                res.render('message.ejs', {message: "You successfully signed in."});
+                res.cookie("userID", result[0].userID, {maxAge: 90000000 * 12, httpOnly: true});
+                res.render('message.ejs', {message: "You successfully signed in.", redirect:"/"});
             }
         });
     });
 
     app.get('/logout', function (req, res) {
-        res.clearCookie("username");
-        res.clearCookie("password");
-        res.clearCookie("email");
-        res.render('message.ejs', {message: "You have been logged out."});
+        res.clearCookie("userID");
+        res.render('message.ejs', {message: "You have been logged out.", redirect:"/"});
     });
 
     app.get("/searchposts", function (req, res) {
@@ -239,7 +234,7 @@ module.exports = function (app) {
                 return;
             }
             if (result.length === 0) {
-                res.render("message.ejs", {message:"Couldn't find any posts."});
+                res.render("message.ejs", {message:"Couldn't find any posts.", redirect:"/"});
                 return;
             }
             res.render("posts.ejs", {posts:result});

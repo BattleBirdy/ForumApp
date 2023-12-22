@@ -59,3 +59,5 @@ CREATE TABLE IF NOT EXISTS replies (
 # Create the app user and give it access to the database
 CREATE USER 'myforumappuser'@'localhost' IDENTIFIED BY 'app2027';
 GRANT ALL PRIVILEGES ON moddingforum.* TO 'myforumappuser'@'localhost';
+
+C:\Program Files\MySQL\MySQL Shell 8.0\mysqldump.exe moddingforum > "C:\Users\Ortvi\Documents\GoldSmiths - Uni\Year 2\Dynamic Web Applications IS52027E\MyForum\dump.sql" -p -u root

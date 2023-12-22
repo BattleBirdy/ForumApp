@@ -4,10 +4,17 @@
     <title>Welcome to the posts list</title>
     <link rel="stylesheet" type="text/css" href="/main.css" />
 </head>
-
 <body>
     <h1><%= post.posttitle %></h1>
+    <p>Posted by <%= post.username%></p>
     <p><%= post.postcontent %></p>
     <p><%= post.postdate %></p>
+    <p><a href="/posts/<%= post.postID %>/delete-post">Delete Post</a></p>
+    <h2>Replies</h2>
+    <ul>
+        <% replies.forEach(item => { %>
+            <li>From user: <%= item.username%><br><%=item.replycontent%></li>
+        <% }); %>
+    </ul>
 </body>
 </html>
