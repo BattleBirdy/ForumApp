@@ -1,3 +1,5 @@
+DROP SCHEMA IF EXISTS `moddingforum`;
+CREATE SCHEMA `moddingforum`;
 USE `moddingforum`;
 
 DROP TABLE IF EXISTS `users`;
@@ -70,7 +72,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `replies`;
 
 CREATE TABLE `replies` (
-  `replyID` int NOT NULL,
+  `replyID` int NOT NULL AUTO_INCREMENT,
   `userID` int NOT NULL,
   `postID` int NOT NULL,
   `replycontent` longtext NOT NULL,
